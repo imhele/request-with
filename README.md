@@ -21,12 +21,6 @@ import axios from 'axios';
 import request from 'request-with';
 
 const url = request.by(request.adapter.axios(axios));
-
-const myRequest = url<Promise<MyResponseType>>('/api/xxx')
-  .with(request.body<MyRequestType>())
-  .with(request.method.preset('POST'));
-
-myRequest({ id: 123 });
 ```
 
 then create request:
@@ -42,7 +36,7 @@ const response = await myRequest({ id: 123 });
 ```tsx
 const myRequest = url<Promise<MyResponseType>>('/api/xxx')
   .with(request.method.preset('GET'))
-  .with(request.query('id'));
+  .with(request.query<[date: string]>('date'));
 
 const response = await myRequest('2021-04-13');
 ```
@@ -60,5 +54,5 @@ const myRequest = url<Promise<MyResponseType>>().with(
   request.mix({ date: request.query<[date: string]>('date'), body: request.body<MyRequestType>() }),
 );
 
-const response = await myRequest({ id: 456 });
+const response = await myRequest({ body: { id: 456 }, date: '2021-04-13' });
 ```
