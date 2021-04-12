@@ -46,5 +46,8 @@
       "eslint",
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "path-to-regexp": "^6.2.0"
   }
 }
