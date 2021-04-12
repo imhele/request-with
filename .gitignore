@@ -2,16 +2,15 @@
 
 # dependencies
 /node_modules
-/packages/*/node_modules
 /npm-debug.log*
 /lerna-debug.log*
 
 # production
 /coverage
-/packages/*/dist
-/packages/*/es
-/packages/*/lib
-/packages/*/index.*.js
+/dist
+/es
+/lib
+/index.*.js
 
 # misc
 .DS_Store

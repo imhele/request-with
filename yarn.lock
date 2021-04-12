@@ -6037,10 +6037,10 @@ vinyl@^2.0.0:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-wc-bundler@^0.2.0-alpha.0:
-  version "0.2.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/wc-bundler/-/wc-bundler-0.2.0-alpha.0.tgz#058989a8744df3998c334175b9ff194b3b6bbe59"
-  integrity sha512-E++BmGbNc9bfcy0Wm373UeuEpBpWrYdArX8CK88rfsPk+2E39nbfHU/RGWgaGj9KZmQzM1ItFHNW5+EfUx5biA==
+wc-bundler@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/wc-bundler/-/wc-bundler-0.2.0.tgz#37275eb9f526f388c1194c6bc7a852bbb273a62c"
+  integrity sha512-RBl9l7noKuNzUNC+V99jVRJ2ACOKdIb5BDlnA6h8CvNMDaepcbq9SVBS+u3iQDtwsfI0EsR5YO3kRU9RGr5PQw==
   dependencies:
     "@babel/core" "7.13.10"
     "@babel/parser" "7.13.12"
