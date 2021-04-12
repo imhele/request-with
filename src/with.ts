@@ -1,14 +1,12 @@
 import type { Method as HTTPMethod } from 'axios';
-import { ParseOptions, PathFunction, TokensToFunctionOptions, compile } from 'path-to-regexp';
+import { ParseOptions, TokensToFunctionOptions, compile } from 'path-to-regexp';
 import type { RequestWithArgument, RequestWithArgumentTransformer, RequestWithPreset } from './by';
 
 export interface RequestWithPayload {
   body?: unknown;
   headers?: t.UnknownRecord;
   method?: HTTPMethod;
-  params?: t.UnknownRecord;
   queries?: t.UnknownRecord;
-  template?: PathFunction;
   url?: string;
 }
 
@@ -70,10 +68,12 @@ requestWithQueries.preset = requestWithPresetQueries;
 
 export function requestWithQuery<Query extends [any]>(
   key: string,
-): RequestWithArgumentTransformer<'queries', Query[0], Query> {
+): RequestWithArgumentTransformer<Query[0], Query> {
   return [
     'argument-transformer',
-    { key: 'queries', transform: (argument) => ({ [key]: argument }) },
+    function queryTransformer(argument, payloads) {
+      payloads.queries.push({ [key]: argument });
+    },
   ];
 }
 
@@ -99,17 +99,13 @@ export function requestWithTemplate<
 >(
   template: Template,
   options?: ParseOptions & TokensToFunctionOptions,
-): RequestWithArgumentTransformer<'params', Params, [params: Params]> {
+): RequestWithArgumentTransformer<Params, [params: Params]> {
   const compiled = compile(template, options);
 
   return [
     'argument-transformer',
-    {
-      key: 'params',
-      transform(argument, payloads) {
-        payloads.template.push(compiled);
-        return argument;
-      },
+    function templateTransformer(argument, payloads) {
+      payloads.url.push(compiled(argument));
     },
   ];
 }

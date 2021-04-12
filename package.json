@@ -32,6 +32,7 @@
     "url": "https://github.com/imhele/request-with.git"
   },
   "scripts": {
+    "build": "wc-bundler",
     "prepublish": "wc-bundler"
   },
   "gitHooks": {

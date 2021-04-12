@@ -10,8 +10,8 @@ export interface Request<Argumnets extends any[], Response> {
   >(
     config: RequestWithArgument<Key, Argument, ArgumentWithName>,
   ): Request<[...Argumnets, ...ArgumentWithName], Response>;
-  with<Key extends keyof RequestWithPayload, Argument, ArgumentWithName extends [Argument]>(
-    config: RequestWithArgumentTransformer<Key, Argument, ArgumentWithName>,
+  with<Argument, ArgumentWithName extends [Argument]>(
+    config: RequestWithArgumentTransformer<Argument, ArgumentWithName>,
   ): Request<[...Argumnets, ...ArgumentWithName], Response>;
   with<Key extends keyof RequestWithPayload, Argument extends RequestWithPayload[Key]>(
     config: RequestWithPreset<Key, Argument>,
@@ -27,17 +27,10 @@ export type RequestWithArgument<
 > = ['argument', Key];
 
 export type RequestWithArgumentTransformer<
-  Key extends keyof RequestWithPayload = keyof RequestWithPayload,
-  Argument = RequestWithPayload[Key],
+  Argument,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _ArgumentWithName extends [Argument] = [Argument]
-> = [
-  'argument-transformer',
-  {
-    key: Key;
-    transform(argument: Argument, upstream: RequestWithPayloads): RequestWithPayload[Key];
-  },
-];
+> = ['argument-transformer', (argument: Argument, payloads: RequestWithPayloads) => void];
 
 export type RequestWithPreset<
   Key extends keyof RequestWithPayload = keyof RequestWithPayload,
@@ -49,10 +42,12 @@ export type RequestWithTransformer = ['transformer', (payloads: RequestWithPaylo
 export type RequestWith<
   Key extends keyof RequestWithPayload = keyof RequestWithPayload,
   Argument extends RequestWithPayload[Key] = RequestWithPayload[Key],
-  ArgumentWithName extends [Argument] = [Argument]
+  ArgumentWithName extends [Argument] = [Argument],
+  TransformerArgument = unknown,
+  TransformerArgumentWithName extends [TransformerArgument] = [TransformerArgument]
 > =
   | RequestWithArgument<Key, Argument, ArgumentWithName>
-  | RequestWithArgumentTransformer<Key, Argument, ArgumentWithName>
+  | RequestWithArgumentTransformer<TransformerArgument, TransformerArgumentWithName>
   | RequestWithPreset<Key, Argument>
   | RequestWithTransformer;
 
@@ -65,20 +60,12 @@ export function requestBy(adapter: RequestWithAdapter<any>) {
 
 function createRequestWith<Argumnets extends any[], Response>(
   adapter: RequestWithAdapter<any>,
-  configs: RequestWith<keyof RequestWithPayload, any, [any]>[] = [],
+  configs: RequestWith<keyof RequestWithPayload, any, [any], any, [any]>[] = [],
 ): Request<Argumnets, Response> {
   const request: Request<Argumnets, Response> = function request() {
     const context = configs.reduce(reduceRequestPayloads, {
-      args: arguments,
-      payloads: {
-        body: [],
-        headers: [],
-        params: [],
-        queries: [],
-        method: [],
-        template: [],
-        url: [],
-      },
+      args: arguments[Symbol.iterator](),
+      payloads: { body: [], headers: [], queries: [], method: [], url: [] },
     });
     return adapter(context.payloads);
   };
@@ -87,13 +74,13 @@ function createRequestWith<Argumnets extends any[], Response>(
 
   return request;
 
-  function requestWith(arg: RequestWith<keyof RequestWithPayload, any, [any]>) {
-    return createRequestWith(adapter, configs.concat(arg));
+  function requestWith(arg: RequestWith<keyof RequestWithPayload, any, [any], any, [any]>) {
+    return createRequestWith(adapter, configs.concat([arg]));
   }
 }
 
 interface RequestPayloadReduceContext {
-  args: IArguments;
+  args: IterableIterator<any>;
   payloads: RequestWithPayloads;
 }
 
@@ -101,15 +88,14 @@ const isKey = Object.prototype.hasOwnProperty as t.Object.prototype.hasOwnProper
 
 function reduceRequestPayloads(
   context: RequestPayloadReduceContext,
-  config: RequestWith<keyof RequestWithPayload>,
-  index: number,
+  config: RequestWith<keyof RequestWithPayload, any, [any], any, [any]>,
 ): RequestPayloadReduceContext {
   const { args, payloads } = context;
 
   if (config[0] === 'argument') {
-    payloads[config[1]].push(args[index]);
+    payloads[config[1]].push(args.next().value);
   } else if (config[0] === 'argument-transformer') {
-    payloads[config[1].key].push(config[1].transform(args[index], payloads) as never);
+    config[1](args.next().value, payloads);
   } else if (config[0] === 'preset') {
     const payload = config[1];
 
