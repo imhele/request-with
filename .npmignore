@@ -1,0 +1,7 @@
+/.editorconfig
+/.eslintrc*
+/.gitignore
+/.prettierrc*
+/node_modules
+/scripts
+/yarn.lock
