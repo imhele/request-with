@@ -13,8 +13,7 @@ export function requestWithAxiosAdapter(
     const headers = mix(payloads.headers);
     const method = last(payloads.method);
     const queries = mix(payloads.queries);
-    const url =
-      last(payloads.url) ?? last(payloads.template)?.(mix(payloads.params) as never) ?? '';
+    const url = last(payloads.url) || '';
     return instance.request({ data: body, headers, method, params: queries, url });
   };
 }
